@@ -1,0 +1,3 @@
+({'input_filename': 'D:\\test\\danmuku.xml', 'output_filename': 'D:\\test\\danmuku.ass'}, {'custom_filter': None, 'bottom_filter': False, 'guest_filter': False, 'top_
+filter': False}, {'bottom_margin': 0, 'custom_offset': '00:00', 'drop_offset': 2, 'font_name': None, 'font_size': 32, 'header_file': None, 'layout_algorithm': 'sync',
+ 'line_count': 4, 'play_resolution': '1920x1080', 'tune_duration': 0})
