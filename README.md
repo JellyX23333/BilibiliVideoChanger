@@ -27,6 +27,7 @@ The program is only tested on windows 10
 - All [lib](#libs) installed.
 - Make a directory called libs and put build danmu2ass files in.
 - Put any image you want in the same directory as main.py, and name the image file bg0.png.(If don't want any background image, change the code)
+ -[code file](./Changer_Eng/main.py)- 
 ```
 if __name__ == "__main__":
     app = QApplication(sys.argv)
