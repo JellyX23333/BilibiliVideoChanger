@@ -5,10 +5,10 @@
  - able to sort the the videos by anime and episode name
  
 ## Table of Content
-*[Language](#language)
-*[System requirements](#system-requirements)
-*[Libs](#libs)
-*[Environment](#environment)
+* [Language](#language)
+* [System requirements](#system-requirements)
+* [Libs](#libs)
+* [Environment](#environment)
 
 ## Language
 Python 3.7.1
