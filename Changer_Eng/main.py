@@ -91,8 +91,8 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
         # start
         all_task = len(self.video.videos)*4         # do a estimation of task
         self.progressBar.setMaximum(all_task)       # give the task number to the progress bar
-        self.__update_log("start processing"
-                          "pre-processing videos")
+        self.__update_log("start processing\n")
+        self.__update_log("pre-processing videos\n")
 
         outer_count = 0
         for episode in self.video.videos:
@@ -100,9 +100,9 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
             # pre-process of danmaku
             name = self.__pre_process_danmaku(episode.danmaku, episode.animate_name, episode.episode_name)
             self.video.videos[outer_count].danmaku = name
-            self.__update_log("Danmaku file of {}-{}".format(self.video.videos[outer_count].episode_name,
-                                                             self.video.videos[outer_count].episode_name))
-            self.__update_log("----pre-process complete")
+            self.__update_log("Danmaku file of {}-{}\n".format(self.video.videos[outer_count].episode_name,
+                                                               self.video.videos[outer_count].episode_name))
+            self.__update_log("----pre-process complete\n")
             self.__update_progress_bar()
 
             # pre-process of video file
@@ -112,18 +112,19 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
                 try:
                     self.video.videos[outer_count].video_file[count] = name
                 except TypeError:
-                    print(type(self.video.videos[outer_count].video_file))
+                    self.__update_log(str(type(self.video.videos[outer_count].video_file[count])))
                 count += 1
-            self.__update_log("Video file of {}-{}"
-                              "----pre-process complete".format(self.video.videos[outer_count].episode_name,
-                                                                self.video.videos[outer_count].animate_name))
+
+            self.__update_log("Video file of {}-{}\n".format(self.video.videos[outer_count].episode_name,
+                                                             self.video.videos[outer_count].animate_name))
+            self.__update_log("----pre-process complete\n")
             self.__update_progress_bar()
 
             # combine
             self.video.videos[outer_count].combine_videos()
-            self.__update_log("Video file of {}-{}".format(self.video.videos[outer_count].episode_name,
-                                                           self.video.videos[outer_count].animate_name))
-            self.__update_log("----combining complete")
+            self.__update_log("Video file of {}-{}\n".format(self.video.videos[outer_count].episode_name,
+                                                             self.video.videos[outer_count].animate_name))
+            self.__update_log("----combining complete\n")
             self.__update_progress_bar()
 
             # output
@@ -132,18 +133,19 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
                     episode.change_file_location(self.lineEdit_2.text(),
                                                  one_ani_one_dir=self.one_ani_one_dir,
                                                  one_ep_one_dir=self.one_ep_one_dir)
-                    self.__update_log("episode {}-{}".format(self.video.videos[outer_count].episode_name,
-                                                             self.video.videos[outer_count].animate_name))
-                    self.__update_log("---- files output to dir {}".format(self.lineEdit_2.text()))
+                    self.__update_log("episode {}-{}\n".format(self.video.videos[outer_count].episode_name,
+                                                               self.video.videos[outer_count].animate_name))
+                    self.__update_log("---- files output to dir {}\n".format(self.lineEdit_2.text()))
                 except FileExistsError:
-                    self.__update_log("episode {}-{}".format(self.video.videos[outer_count].episode_name,
-                                                             self.video.videos[outer_count].animate_name))
-                    self.__update_log("---- file already exist")
+                    self.__update_log("episode {}-{}\n".format(self.video.videos[outer_count].episode_name,
+                                                               self.video.videos[outer_count].animate_name))
+                    self.__update_log("---- file already exist\n")
             else:
-                self.__update_log("Episode {}-{}".format(self.video.videos[outer_count].episode_name,
-                                                         self.video.videos[outer_count].animate_name))
-                self.__update_log("----skip output redirection")
-                self.__update_progress_bar()
+                self.__update_log("Episode {}-{}\n".format(self.video.videos[outer_count].episode_name,
+                                                           self.video.videos[outer_count].animate_name))
+                self.__update_log("----skip output redirection\n")
+
+            self.__update_progress_bar()
 
             outer_count += 1
 
@@ -181,13 +183,18 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
         value += 1
         self.progressBar.setValue(value)
 
+    def __pre_process_danmaku(self, danmaku_file_path, animate, episode):  # return that changed name
+        try:
+            return change_bullet_to_ass(danmaku_file_path, animate, episode)
+        except PermissionError:
+            self.__update_log(danmaku_file_path + "-- no access")
+            # DO - send a notice to user
+
     @ staticmethod
     def __pre_process_video(video_file_path):         # return the changed name
         return change_format(video_file_path)
 
-    @ staticmethod
-    def __pre_process_danmaku(danmaku_file_path, animate, episode):     # return that changed name
-        return change_bullet_to_ass(danmaku_file_path, animate, episode)
+
 
 
 # some function outside of the window structure
@@ -203,6 +210,6 @@ def sort_videos(videos):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = VideoChangerUI()
+    window = VideoChangerUI(background="bg0.png")
     window.show()
     sys.exit(app.exec_())

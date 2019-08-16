@@ -1,16 +1,12 @@
+from Niconvert import convert
 import os
 import json
 
-'''
- --------------------------------Base functions
-'''
 # 'danmaku' is Japanese 「弾幕」's romanji「ロマン字」, in english it is called"bullet screen" and called ‘弹幕’ in chinese.
 # I use it here in that bilibili uses it to name their bullet screen file.
 
 
 # get the file to be combine together
-
-
 def get_files(path):
     if not os.path.exists(path):
         raise NotADirectoryError
@@ -75,16 +71,9 @@ def is_flv(path):
 
 
 # change file format
-
-
 def change_format(file_path):
     if not os.path.isfile(file_path):   # detect if the path is correct
         raise FileNotFoundError
-    if not os.path.basename(file_path).split(".")[-1] == "blv":
-        if os.path.basename(file_path).split(".")[-1] == "flv":
-            return file_path
-        else:
-            raise FileNotFoundError
 
     dir_path = os.path.dirname(file_path)
     original_name = os.path.basename(file_path)
@@ -92,6 +81,9 @@ def change_format(file_path):
     new_name_list = list(os.path.basename(file_path).split("."))
     new_name_list[-1] = "flv"
     new_name = new_name_list[0] + "." + new_name_list[-1]
+
+    if os.path.isfile(new_name):
+        return new_name
 
     os.rename(os.path.join(dir_path, original_name), os.path.join(dir_path, new_name))
 
@@ -162,6 +154,14 @@ def change_bullet_to_ass(danmaku, episode_name, animate_name):
     new_name = os.path.dirname(danmaku) + "\\" + animate_name + '_' + episode_name + ".ass"     # the new name of file
 
     danmaku_path = os.path.dirname(danmaku)
+
+    file = open(danmaku_path)
+    content = file.read()
+    file.close()
+
+    content = convert(content, "1920:1080", "Microsoft YaHei", 64, 4, 0, 0)     # input, resolution, font, font size,
+                                                                                # line count, bottom margin, shift
+    '''
     danmaku2ass = os.path.dirname(str(__file__)) + "/Libs/Danmu2Ass/Kaedei.Danmu2Ass.exe"   # path to danmaku2ass
     command = "{} {}"                                                                       # the format of command
 
@@ -170,11 +170,17 @@ def change_bullet_to_ass(danmaku, episode_name, animate_name):
 
     # change file type to ass
     os.system(command.format(danmaku2ass, danmaku))
+    '''
 
     # change name of the changed ass file
     danmaku = list(os.path.basename(danmaku).split("."))
     danmaku = danmaku_path + "/" + str(danmaku[0]) + ".ass"
     os.rename(danmaku, new_name)
+
+    # write the new content in
+    file = open(new_name, "w")
+    file.write(content)
+    file.close()
 
     # return the new name back
     return new_name
