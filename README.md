@@ -1,5 +1,6 @@
 # BilibiliVideoChanger
  Change the bilibili videos(saved in Andrion phones)to readable format
+ This program is not avaliable in executable form(I failed to compile with PyInstaller)
  - able to rename videos to .flv and perform combining with FFMpeg
  - able to change the danmaku file to .ass format with [danmu2ass](https://github.com/ikde/danmu2ass/tree/master/Danmu2Ass)
  - able to sort the the videos by anime and episode name

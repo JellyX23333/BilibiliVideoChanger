@@ -1,5 +1,6 @@
 # Bilibili视频更改器
 把bilibili的视频(安卓手机)改为电脑播放器可读文件
+沒有exe版（PyInstaller打包失敗）
  - 将视频重命名为.flv并使用FFMpeg进行整合
  - 将弹幕文件从.xml格式，改为.ass格式，使用[danmu2ass](https://github.com/ikde/danmu2ass/tree/master/Danmu2Ass)
  - 根据动漫名和集名对视频进行分类
