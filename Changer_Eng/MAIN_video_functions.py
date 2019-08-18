@@ -78,16 +78,18 @@ def change_format(file_path):
     dir_path = os.path.dirname(file_path)
     original_name = os.path.basename(file_path)
 
+    # the name
     new_name_list = list(os.path.basename(file_path).split("."))
     new_name_list[-1] = "flv"
     new_name = new_name_list[0] + "." + new_name_list[-1]
+    new_name = os.path.join(dir_path, new_name)
 
-    if os.path.isfile(new_name):
+    if os.path.isfile(os.path.join(dir_path, new_name)):
         return new_name
 
-    os.rename(os.path.join(dir_path, original_name), os.path.join(dir_path, new_name))
+    os.rename(os.path.join(dir_path, original_name), new_name)
 
-    return os.path.join(dir_path, new_name)
+    return new_name
 
 
 def get_info(episode_dic, request):    # get the information of the episode(animate's name or episode'name)

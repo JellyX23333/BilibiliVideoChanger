@@ -9,6 +9,8 @@ from tkinter.filedialog import askdirectory
 from tkinter import Tk
 
 import sys
+import os
+from multiprocessing import Process
 
 
 # the main window structure
@@ -83,6 +85,20 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
         self.lineEdit_2.setText(file_dir)
 
     def button_start(self):
+        # detect
+        try:
+            self.video
+        except AttributeError:
+            if not os.path.isdir(self.lineEdit.text()):
+                self.textBrowser.setText("Please check your input directory, you have to select a valid directory.")
+                return
+            else:
+                self.button_confirm()
+
+        if self.video.videos.__len__() == 0:
+            self.textBrowser.setText("There is no bilibili video found in this directory.")
+            return
+
         # reset
         self.log = ""
         self.textBrowser.setText("")
@@ -112,7 +128,9 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
                 try:
                     self.video.videos[outer_count].video_file[count] = name
                 except TypeError:
-                    self.__update_log(str(type(self.video.videos[outer_count].video_file[count])))
+                    self.__update_log(str(type(self.video.videos[outer_count].video_file[count])) +
+                                      "- {} - A type error has occurred "
+                                      .format(self.video.videos[outer_count].video_file[count]))
                 count += 1
 
             self.__update_log("Video file of {}-{}\n".format(self.video.videos[outer_count].episode_name,
@@ -121,10 +139,19 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
             self.__update_progress_bar()
 
             # combine
+            original_files = self.video.videos[outer_count].video_file
+
             self.video.videos[outer_count].combine_videos()
             self.__update_log("Video file of {}-{}\n".format(self.video.videos[outer_count].episode_name,
                                                              self.video.videos[outer_count].animate_name))
-            self.__update_log("----combining complete\n")
+            self.__update_log("----FFMpeg has finished its process\n")
+
+            if os.path.isfile(self.video.videos[outer_count].video_file):   # check the combining
+                self.__update_log("---- Combining success")
+            else:
+                self.__update_log("---- A problem has occurred with combining files {}".format(original_files))
+            del original_files
+
             self.__update_progress_bar()
 
             # output
@@ -140,6 +167,7 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
                     self.__update_log("episode {}-{}\n".format(self.video.videos[outer_count].episode_name,
                                                                self.video.videos[outer_count].animate_name))
                     self.__update_log("---- file already exist\n")
+                    self.__update_log("----skip output redirection\n")
             else:
                 self.__update_log("Episode {}-{}\n".format(self.video.videos[outer_count].episode_name,
                                                            self.video.videos[outer_count].animate_name))
@@ -195,8 +223,6 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
         return change_format(video_file_path)
 
 
-
-
 # some function outside of the window structure
 def sort_videos(videos):
     video_list = ""
@@ -210,6 +236,6 @@ def sort_videos(videos):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = VideoChangerUI(background="bg0.png")
+    window = VideoChangerUI(background="bg0.jpg")
     window.show()
     sys.exit(app.exec_())
