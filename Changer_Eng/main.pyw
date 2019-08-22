@@ -234,7 +234,7 @@ def sort_videos(videos):
     return video_list
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":      # the running of program
     app = QApplication(sys.argv)
     window = VideoChangerUI(background="bg0.jpg")
     window.show()
