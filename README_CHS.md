@@ -15,7 +15,7 @@
 Python 3.7.1
 
 ## 系统要求 
-只进行过Windows 10的测试（本人没有mac也懒得进行linux的测试）
+只进行过Windows 10的测试（本人没有mac并且还没有进行过linux的测试）
 
 ## 库
 - os(Python自带)
@@ -26,9 +26,9 @@ Python 3.7.1
 
 ## 环境
 - 安装所有的[库](#库)
-- 创建文件夹「Libs」并把build完了的danmu2ass文件放进去
+- 创建文件夹「Libs」并把[Nicovert.py](https://github.com/ikde/danmu2ass/blob/master/Danmu2Ass/PythonFile/Niconvert.py)文件放进去
 - 把你想要的背景图片放入与main.py相同的文件夹, 将其命名为「bg0.png」(如果不要背景图片，需自行该代码)
- -[代码文件](./Changer_Eng/main.py)- 
+ -[代码文件](./Changer_中文/main.py)- 
 ```
 if __name__ == "__main__":
     app = QApplication(sys.argv)
