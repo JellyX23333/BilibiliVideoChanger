@@ -27,6 +27,7 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
                                    "To start the process, click start.")
 
         # variables
+        self.current_process = None
         self.video_names = []
         self.output_to_dir = False
         self.with_danmaku = True
@@ -85,97 +86,10 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
         self.lineEdit_2.setText(file_dir)
 
     def button_start(self):
-        # detect
-        try:
-            self.video
-        except AttributeError:
-            if not os.path.isdir(self.lineEdit.text()):
-                self.textBrowser.setText("Please check your input directory, you have to select a valid directory.")
-                return
-            else:
-                self.button_confirm()
-
-        if self.video.videos.__len__() == 0:
-            self.textBrowser.setText("There is no bilibili video found in this directory.")
-            return
-
-        # reset
-        self.log = ""
-        self.textBrowser.setText("")
-        self.progressBar.setValue(0)
-
-        # start
-        all_task = len(self.video.videos)*4         # do a estimation of task
-        self.progressBar.setMaximum(all_task)       # give the task number to the progress bar
-        self.__update_log("start processing\n")
-        self.__update_log("pre-processing videos\n")
-
-        outer_count = 0
-        for episode in self.video.videos:
-
-            # pre-process of danmaku
-            name = self.__pre_process_danmaku(episode.danmaku, episode.animate_name, episode.episode_name)
-            self.video.videos[outer_count].danmaku = name
-            self.__update_log("Danmaku file of {}-{}\n".format(self.video.videos[outer_count].episode_name,
-                                                               self.video.videos[outer_count].episode_name))
-            self.__update_log("----pre-process complete\n")
-            self.__update_progress_bar()
-
-            # pre-process of video file
-            count = 0
-            for video_path in episode.video_file:
-                name = self.__pre_process_video(video_path)
-                try:
-                    self.video.videos[outer_count].video_file[count] = name
-                except TypeError:
-                    self.__update_log(str(type(self.video.videos[outer_count].video_file[count])) +
-                                      "- {} - A type error has occurred "
-                                      .format(self.video.videos[outer_count].video_file[count]))
-                count += 1
-
-            self.__update_log("Video file of {}-{}\n".format(self.video.videos[outer_count].episode_name,
-                                                             self.video.videos[outer_count].animate_name))
-            self.__update_log("----pre-process complete\n")
-            self.__update_progress_bar()
-
-            # combine
-            original_files = self.video.videos[outer_count].video_file
-
-            self.video.videos[outer_count].combine_videos()
-            self.__update_log("Video file of {}-{}\n".format(self.video.videos[outer_count].episode_name,
-                                                             self.video.videos[outer_count].animate_name))
-            self.__update_log("----FFMpeg has finished its process\n")
-
-            if os.path.isfile(self.video.videos[outer_count].video_file):   # check the combining
-                self.__update_log("---- Combining success")
-            else:
-                self.__update_log("---- A problem has occurred with combining files {}".format(original_files))
-            del original_files
-
-            self.__update_progress_bar()
-
-            # output
-            if self.output_to_dir:
-                try:
-                    episode.change_file_location(self.lineEdit_2.text(),
-                                                 one_ani_one_dir=self.one_ani_one_dir,
-                                                 one_ep_one_dir=self.one_ep_one_dir)
-                    self.__update_log("episode {}-{}\n".format(self.video.videos[outer_count].episode_name,
-                                                               self.video.videos[outer_count].animate_name))
-                    self.__update_log("---- files output to dir {}\n".format(self.lineEdit_2.text()))
-                except FileExistsError:
-                    self.__update_log("episode {}-{}\n".format(self.video.videos[outer_count].episode_name,
-                                                               self.video.videos[outer_count].animate_name))
-                    self.__update_log("---- file already exist\n")
-                    self.__update_log("----skip output redirection\n")
-            else:
-                self.__update_log("Episode {}-{}\n".format(self.video.videos[outer_count].episode_name,
-                                                           self.video.videos[outer_count].animate_name))
-                self.__update_log("----skip output redirection\n")
-
-            self.__update_progress_bar()
-
-            outer_count += 1
+        if self.current_process:
+            self.current_process.join()
+        self.current_process = Process(target=self.__process_button_start, args=(self,))
+        self.current_process.start()
 
     def output_dir_state(self):     # for check box
         if self.checkBox.checkState():
@@ -217,6 +131,105 @@ class VideoChangerUI(QMainWindow, Ui_MainWindow):
         except PermissionError:
             self.__update_log(danmaku_file_path + "-- no access")
             # DO - send a notice to user
+
+    @staticmethod
+    def __process_button_start(_class):
+        # detect
+        try:
+            _class.video
+        except AttributeError:
+            if not os.path.isdir(_class.lineEdit.text()):
+                _class.textBrowser.setText("Please check your input directory, you have to select a valid directory.")
+                return
+            else:
+                _class.button_confirm()
+
+        if _class.video.videos.__len__() == 0:
+            _class.textBrowser.setText("There is no bilibili video found in this directory.")
+            return
+
+        # reset
+        _class.log = ""
+        _class.textBrowser.setText("")
+        _class.progressBar.setValue(0)
+
+        # start
+        all_task = len(_class.video.videos) * 4  # do a estimation of task
+        _class.progressBar.setMaximum(all_task)  # give the task number to the progress bar
+        _class.__update_log("start processing\n")
+        _class.__update_log("pre-processing videos\n")
+
+        outer_count = 0
+        for episode in _class.video.videos:
+
+            # pre-process of danmaku
+            name = _class.__pre_process_danmaku(episode.danmaku, episode.animate_name, episode.episode_name)
+            _class.video.videos[outer_count].danmaku = name
+            _class.__update_log("Danmaku file of {}-{}\n".format(_class.video.videos[outer_count].episode_name,
+                                                                 _class.video.videos[outer_count].episode_name))
+            _class.__update_log("----pre-process complete\n")
+            _class.__update_progress_bar()
+
+            # pre-process of video file
+            count = 0
+            for video_path in episode.video_file:
+                name = _class.__pre_process_video(video_path)
+                try:
+                    _class.video.videos[outer_count].video_file[count] = name
+                except TypeError:
+                    _class.__update_log(str(type(_class.video.videos[outer_count].video_file[count])) +
+                                        "- {} - A type error has occurred "
+                                        .format(_class.video.videos[outer_count].video_file[count]))
+                count += 1
+
+            _class.__update_log("Video file of {}-{}\n".format(_class.video.videos[outer_count].episode_name,
+                                                               _class.video.videos[outer_count].animate_name))
+            _class.__update_log("----pre-process complete\n")
+            _class.__update_progress_bar()
+
+            # combine
+            original_files = _class.video.videos[outer_count].video_file
+
+            _class.video.videos[outer_count].combine_videos()
+            _class.__update_log("Video file of {}-{}\n".format(_class.video.videos[outer_count].episode_name,
+                                                               _class.video.videos[outer_count].animate_name))
+            _class.__update_log("----FFMpeg has finished its process\n")
+
+            if os.path.isfile(_class.video.videos[outer_count].video_file):  # check the combining
+                _class.__update_log("---- Combining success")
+            else:
+                _class.__update_log("---- A problem has occurred with combining files {}".format(original_files))
+            del original_files
+
+            _class.__update_progress_bar()
+
+            # output
+            if _class.output_to_dir:
+                if os.path.isdir(_class.lineEdit_2.text()):
+                    try:
+                        episode.change_file_location(_class.lineEdit_2.text(),
+                                                     one_ani_one_dir=_class.one_ani_one_dir,
+                                                     one_ep_one_dir=_class.one_ep_one_dir)
+                        _class.__update_log("episode {}-{}\n".format(_class.video.videos[outer_count].episode_name,
+                                                                     _class.video.videos[outer_count].animate_name))
+                        _class.__update_log("---- files output to dir {}\n".format(_class.lineEdit_2.text()))
+                    except FileExistsError:
+                        _class.__update_log("episode {}-{}\n".format(_class.video.videos[outer_count].episode_name,
+                                                                     _class.video.videos[outer_count].animate_name))
+                        _class.__update_log("---- file already exist\n")
+                        _class.__update_log("----skip output redirection\n")
+                else:   # If incorrect path have been entered
+                    _class.textBrowser.setText("Please check your output directory\n")
+                    _class.textBrowser.setText("Terminating Process")
+                    return
+            else:
+                _class.__update_log("Episode {}-{}\n".format(_class.video.videos[outer_count].episode_name,
+                                                             _class.video.videos[outer_count].animate_name))
+                _class.__update_log("----skip output redirection\n")
+
+            _class.__update_progress_bar()
+
+            outer_count += 1
 
     @ staticmethod
     def __pre_process_video(video_file_path):         # return the changed name
