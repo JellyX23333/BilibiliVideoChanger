@@ -71,7 +71,7 @@ def is_flv(path):
 
 
 # change file format
-def change_format(file_path):
+def change_format_to_flv(file_path):
     if not os.path.isfile(file_path):   # detect if the path is correct
         raise FileNotFoundError
 
@@ -92,21 +92,21 @@ def change_format(file_path):
     return new_name
 
 
-def get_info(episode_dic, request):    # get the information of the episode(animate's name or episode'name)
+def get_info(episode_dic):
+    # load in the specific entry.json file
     file_path = episode_dic['animate_info']
     file = open(file_path, 'r', encoding='utf-8')  # if not decode as utf-8 error would occur
     data = json.load(file)
     file.close()
 
-    name = ""
+    # the name of animate
+    an_name = data["title"]
+    # the name of episode
+    ep_name = data["ep"]["index_title"]
+    # the episode number
+    index = data["ep"]["index"]
 
-    if request == "__animate_name__":
-        name = data["title"]
-
-    elif request == "__episode_name__":
-        name = data["ep"]["index_title"]
-
-    return name  # return the value of what the request wanted
+    return an_name, ep_name, index
 
 
 def animate_dir(animate, destination):  # check is the animate dir all ready existed, if not create
@@ -120,10 +120,12 @@ def animate_dir(animate, destination):  # check is the animate dir all ready exi
     return animate_dir_path
 
 
-def episode_dir(episode, destination):
-    # the animate dir
-    episode_dir_path = os.path.join(destination, episode)
-    # what is under the destination dir
+def episode_dir(episode, index, destination):
+    # the episode dir
+    episode_name = str(index + episode)
+    episode_name.replace(" ", "_")
+    episode_dir_path = os.path.join(destination, episode_name)
+    # check if under the destination dir
     dirs = os.listdir(destination)
     if episode not in dirs:
         os.makedirs(episode_dir_path)
@@ -131,56 +133,38 @@ def episode_dir(episode, destination):
     return episode_dir_path
 
 
-def move_episode(video, animates_dir_name):                                                     # test passed
-    # variable
-    new_location = os.path.join(animates_dir_name, os.path.basename(video))
+def move_episode(video, directory):
+    if not video:
+        return
     # move
-    os.rename(video, new_location)
+    os.rename(video, os.path.join(directory, os.path.basename(video)))
 
 
-def move_danmaku(danmaku, animates_dir_name):                                                   # test passed
+def move_danmaku(danmaku, directory):
     if not danmaku:
         return
-    # variable
-    new_location = os.path.join(animates_dir_name, os.path.basename(danmaku))
     # move
-    os.rename(danmaku, new_location)
+    os.rename(danmaku, os.path.join(directory, os.path.basename(danmaku)))
 
 
-def change_bullet_to_ass(danmaku, episode_name, animate_name):
-
-    if not os.path.isfile(danmaku):
+def change_bullet_to_ass(danmaku, episode_name, animate_name, episode_index):
+    if not os.path.isfile(danmaku):     # if no danmaku is there
         return None
 
-    # variables
-    new_name = os.path.dirname(danmaku) + "\\" + animate_name + '_' + episode_name + ".ass"     # the new name of file
+    # the new name of file
+    new_name = os.path.dirname(danmaku) + "\\" + episode_index + '_' + animate_name + '_' + episode_name + ".ass"
 
-    danmaku_path = os.path.dirname(danmaku)
-
-    file = open(danmaku_path)
+    file = open(danmaku, encoding='utf-8')
     content = file.read()
     file.close()
 
-    content = convert(content, "1920:1080", "Microsoft YaHei", 64, 4, 0, 0)     # input, resolution, font, font size,
-                                                                                # line count, bottom margin, shift
-    '''
-    danmaku2ass = os.path.dirname(str(__file__)) + "/Libs/Danmu2Ass/Kaedei.Danmu2Ass.exe"   # path to danmaku2ass
-    command = "{} {}"                                                                       # the format of command
-
-    if os.path.isfile(new_name):
-        return new_name
-
-    # change file type to ass
-    os.system(command.format(danmaku2ass, danmaku))
-    '''
-
-    # change name of the changed ass file
-    danmaku = list(os.path.basename(danmaku).split("."))
-    danmaku = danmaku_path + "/" + str(danmaku[0]) + ".ass"
+    content = convert(content, "1920:1080", "Microsoft YaHei", 64, 4, 0, 0)     # (input, resolution, font, font size,
+                                                                                # line count, bottom margin, shift)
+    # change name of the file
     os.rename(danmaku, new_name)
 
     # write the new content in
-    file = open(new_name, "w")
+    file = open(new_name, "w", encoding='utf-8')
     file.write(content)
     file.close()
 

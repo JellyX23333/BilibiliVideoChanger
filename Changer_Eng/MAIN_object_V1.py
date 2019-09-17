@@ -1,13 +1,16 @@
+from MAIN_video_functions import animate_dir, move_episode, move_danmaku, episode_dir
+
+
 class Episode:
     def __init__(self, episode_info):
         from MAIN_video_functions import get_info
         import os
 
-        self.episode_name = get_info(episode_info, "__episode_name__")
-        self.animate_name = get_info(episode_info, "__animate_name__")
-        self.video_file_path = os.path.dirname(episode_info["video"][0])
-        self.video_file = list(episode_info["video"])
-        self.danmaku = episode_info["Bullet"]
+        # all self. variables
+        self.animate_name, self.episode_name, self.episode_index = get_info(episode_info)   # to create new name
+        self.video_file_path = os.path.dirname(episode_info["video"][0])                    # where's the video stored
+        self.video_file = list(episode_info["video"])                                       # video files
+        self.danmaku = episode_info["Bullet"]                                               # the danmaku file
 
     def combine_videos(self):
         import os
@@ -17,7 +20,7 @@ class Episode:
                 return
 
         # variables
-        new_name = self.animate_name + "_" + self.episode_name + ".flv"
+        new_name = self.episode_index + '_' + self.animate_name + "_" + self.episode_name + ".flv"
         new_name = new_name.replace(" ", "_")
         new_name = new_name.replace("/", "_")
 
@@ -42,17 +45,15 @@ class Episode:
         self.video_file = target_path + "\\" + new_name
 
     def change_file_location(self, destination, one_ani_one_dir=False, one_ep_one_dir=False):
-        from MAIN_video_functions import animate_dir, move_episode, move_danmaku, episode_dir
-
         path = destination
 
         # check is the animate dir all ready existed, if not create
         if one_ani_one_dir:
             path = animate_dir(self.animate_name, destination=path)
             if one_ep_one_dir:
-                path = episode_dir(self.episode_name, destination=path)
+                path = episode_dir(self.episode_name, self.episode_index, destination=path)
         elif one_ep_one_dir:
-            path = episode_dir(self.episode_name, destination=path)
+            path = episode_dir(self.episode_name, self.episode_index, destination=path)
 
         # move episode and bullet into the animate dir
         move_episode(self.video_file, path)
@@ -66,8 +67,10 @@ class AllVideos:
 
         # the location where the animate files located
         self.files_location = path
+
         # the videos that is under the path
         self.videos = list(get_files(self.files_location))
+
         count = 0
         for episode in self.videos:
             self.videos[count] = (Episode(episode))
